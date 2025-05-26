@@ -28,7 +28,7 @@ class SerialQrPlugin : FlutterPlugin, EventChannel.StreamHandler {
 
   private fun startSerialReading() {
     Thread {
-      val file = File("/dev/ttyS1")  // cihazına göre ayarla
+      val file = File("/dev/ttyS4")  // cihazına göre ayarla
       if (!file.exists()) {
         eventSink?.success("Port bulunamadı: /dev/ttyS4")
         return@Thread
