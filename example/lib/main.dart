@@ -21,11 +21,10 @@ class _SerialReaderWidgetState extends State<SerialReaderWidget> {
   @override
   void initState() {
     super.initState();
-    SerialQrPlugin.serialStream.listen((data) {
-      setState(() {
-        lastData = data;
-      });
+    SerialQrPlugin.qrStream.listen((data) {
+      print("QR: $data");
     });
+
   }
 
   @override
