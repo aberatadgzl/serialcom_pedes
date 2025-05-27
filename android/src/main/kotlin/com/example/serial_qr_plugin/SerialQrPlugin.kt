@@ -28,32 +28,43 @@ class SerialQrPlugin : FlutterPlugin, EventChannel.StreamHandler {
 
   private fun startSerialReading() {
     Thread {
-      val file = File("/dev/ttyS4")  // cihazına göre ayarla
+      val file = File("/dev/ttyS4") // veya cihazına göre ttyUSB0 / ttyACM0
       if (!file.exists()) {
-        eventSink?.success("Port bulunamadı: /dev/ttyS4")
+        Handler(Looper.getMainLooper()).post {
+          eventSink?.error("PORT_NOT_FOUND", "Port bulunamadı: /dev/ttyS1", null)
+        }
         return@Thread
       }
 
       try {
-        val input = FileInputStream(file)
-        val buffer = ByteArray(256)
+        val inputStream = FileInputStream(file)
+        val buffer = ByteArray(1024)
+        var accumulated = ""
 
         while (running) {
-          val available = input.available()
-          if (available > 0) {
-            val size = input.read(buffer)
-            val data = String(buffer, 0, size)
-            Handler(Looper.getMainLooper()).post {
-              eventSink?.success(data)
+          val bytesRead = inputStream.read(buffer)
+          if (bytesRead > 0) {
+            val newData = String(buffer, 0, bytesRead, Charsets.UTF_8)
+            accumulated += newData
+
+            // Eğer bir QR okuma tamamlandıysa (64 karakter örnek verdin)
+            if (accumulated.length >= 64) {
+              val qrCode = accumulated.substring(0, 64)
+              accumulated = accumulated.removePrefix(qrCode)
+
+              Handler(Looper.getMainLooper()).post {
+                eventSink?.success(qrCode)
+              }
             }
+          } else {
+            Thread.sleep(10)
           }
-          Thread.sleep(100)  // CPU koruması
         }
 
-        input.close()
+        inputStream.close()
       } catch (e: Exception) {
         Handler(Looper.getMainLooper()).post {
-          eventSink?.error("ERROR", "Port okuma hatası: ${e.message}", null)
+          eventSink?.error("READ_ERROR", e.message, null)
         }
       }
     }.start()
