@@ -1,6 +1,5 @@
 package com.example.serial_qr_plugin
 
-
 import android.os.Handler
 import android.os.Looper
 import io.flutter.plugin.common.EventChannel
@@ -67,7 +66,7 @@ class SerialQrPlugin(private val eventChannel: EventChannel) : EventChannel.Stre
     @JvmStatic
     fun registerWith(registrar: Registrar) {
       val channel = EventChannel(registrar.messenger(), "my_qr_plugin")
-      channel.setStreamHandler(MyQrPlugin(channel))
+      channel.setStreamHandler(SerialQrPlugin(channel))
     }
   }
 }
